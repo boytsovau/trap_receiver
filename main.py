@@ -71,7 +71,7 @@ async def main():
 
         # Запуск обработчика asyncio
         snmpEngine.transportDispatcher.jobStarted(1)  # Эта строка важна для корректной работы
-        await snmpEngine.transportDispatcher.runDispatcher()
+        snmpEngine.transportDispatcher.runDispatcher()
     except Exception as e:
         logging.error("Error in SNMP Trap Receiver: %s", str(e))
         raise
