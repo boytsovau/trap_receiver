@@ -1,9 +1,9 @@
-import asyncio
 from pysnmp.hlapi.asyncio import SnmpEngine, CommunityData, ContextData
 from pysnmp.entity import config
 from pysnmp.carrier.asyncio.dgram import udp
 from pysnmp.entity.rfc3413 import ntfrcv
 import logging
+import asyncio
 import smtplib
 from email.mime.text import MIMEText
 
@@ -66,8 +66,11 @@ async def main():
 
     print("SNMP Trap Receiver is running and logging to 'snmp_traps.log'...")
 
-    # Запуск обработчика asyncio без await
-    snmpEngine.transportDispatcher.runDispatcher()
+    # Запуск обработчика asyncio
+    try:
+        snmpEngine.transportDispatcher.runDispatcher()
+    except Exception:
+        raise
 
 # Запуск asyncio loop
 asyncio.run(main())
