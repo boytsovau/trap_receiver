@@ -57,7 +57,7 @@ async def main():
         config.addTransport(
             snmpEngine,
             udp.domainName,
-            udp.UdpTransport().openServerMode(('0.0.0.0', 162))
+            udp.UdpTransport().openServerMode(('0.0.0.0', 10162))
         )
 
         # Настройка SNMPv2c
