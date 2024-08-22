@@ -1,9 +1,9 @@
+import logging
+import asyncio
 from pysnmp.hlapi.asyncio import SnmpEngine, CommunityData, ContextData
 from pysnmp.entity import config
 from pysnmp.carrier.asyncio.dgram import udp
 from pysnmp.entity.rfc3413 import ntfrcv
-import logging
-import asyncio
 import smtplib
 from email.mime.text import MIMEText
 
@@ -11,8 +11,8 @@ from email.mime.text import MIMEText
 logging.basicConfig(
     filename='snmp_traps.log',
     filemode='a',
-    format='%(asctime)s - %(message)s',
-    level=logging.INFO
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    level=logging.DEBUG  # Установите на DEBUG для получения полной информации
 )
 
 # Функция для отправки email
@@ -44,33 +44,39 @@ def cbFun(snmpEngine, stateReference, contextEngineId, contextName, varBinds, cb
 
     for name, val in varBinds:
         if 'linkDown' in val.prettyPrint():
+            logging.debug("Detected 'linkDown', sending email...")
             send_email("SNMP Trap Alert", log_message)
             break
 
 # Основная функция
 async def main():
-    snmpEngine = SnmpEngine()
-
-    # Настройка транспорта для получения SNMP TRAP сообщений
-    config.addTransport(
-        snmpEngine,
-        udp.domainName,
-        udp.UdpTransport().openServerMode(('0.0.0.0', 162))
-    )
-
-    # Настройка SNMPv2c
-    config.addV1System(snmpEngine, 'my-area', 'public')
-
-    # Привязка функции обработки сообщений
-    ntfrcv.NotificationReceiver(snmpEngine, cbFun)
-
-    print("SNMP Trap Receiver is running and logging to 'snmp_traps.log'...")
-
-    # Запуск обработчика asyncio
     try:
-        snmpEngine.transportDispatcher.runDispatcher()
-    except Exception:
+        snmpEngine = SnmpEngine()
+
+        # Настройка транспорта для получения SNMP TRAP сообщений
+        config.addTransport(
+            snmpEngine,
+            udp.domainName,
+            udp.UdpTransport().openServerMode(('0.0.0.0', 162))
+        )
+
+        # Настройка SNMPv2c
+        config.addV1System(snmpEngine, 'my-area', 'public')
+
+        # Привязка функции обработки сообщений
+        ntfrcv.NotificationReceiver(snmpEngine, cbFun)
+
+        logging.info("SNMP Trap Receiver is running and logging to 'snmp_traps.log'...")
+        print("SNMP Trap Receiver is running and logging to 'snmp_traps.log'...")
+
+        # Запуск обработчика asyncio
+        snmpEngine.transportDispatcher.jobStarted(1)  # Эта строка важна для корректной работы
+        await snmpEngine.transportDispatcher.runDispatcher()
+    except Exception as e:
+        logging.error("Error in SNMP Trap Receiver: %s", str(e))
         raise
 
 # Запуск asyncio loop
-asyncio.run(main())
+loop = asyncio.get_event_loop()
+loop.run_until_complete(main())
+loop.run_forever()
