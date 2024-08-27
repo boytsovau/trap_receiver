@@ -61,16 +61,27 @@ def cbFun(snmpEngine, stateReference, contextEngineId, contextName, varBinds, cb
     log_message = 'Received new Trap message:\n'
     for name, val in varBinds:
         try:
-            oid, val_str = name.prettyPrint(), val.prettyPrint()
-            mibName, mibSym = mibViewController.mibBuilder.importSymbols(
-                name.getMibSymbol()[0],  # Имя MIB
-                name.getMibSymbol()[1]   # Имя объекта внутри MIB
-            )
-            resolvedName = f"{mibName.getName()}::{mibSym.getLabel()}"
-            log_message += f'{resolvedName} = {val_str}\n'
+            oid = name.prettyPrint()
+            val_str = val.prettyPrint()
+
+            # Попытка найти символ в MIB
+            mibNode, = mibViewController.mibBuilder.importSymbols(name.getMibSymbol()[0])
+            resolvedName = mibNode.getLabel()
+
+            log_message += f'{resolvedName} ({oid}) = {val_str}\n'
         except Exception as e:
             log_message += f'{oid} = {val_str}\n'
             logging.error(f"Error resolving OID {oid}: {e}")
+
+    logging.info(log_message)
+    print(log_message)
+
+    for name, val in varBinds:
+        if 'linkDown' in val.prettyPrint():
+            logging.debug("Detected 'linkDown', sending email...")
+            send_email("SNMP Trap Alert", log_message)
+            break
+
 
     logging.info(log_message)
     print(log_message)
