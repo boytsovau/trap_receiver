@@ -1,11 +1,11 @@
-import socket
 import logging
 import asyncio
-import smtplib
 from pysnmp.hlapi.asyncio import SnmpEngine, CommunityData, ContextData
 from pysnmp.entity import config
 from pysnmp.carrier.asyncio.dgram import udp
 from pysnmp.entity.rfc3413 import ntfrcv
+from pysnmp.hlapi import ObjectType
+import smtplib
 from email.mime.text import MIMEText
 
 # Настройка логирования
@@ -15,7 +15,6 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s',
     level=logging.DEBUG
 )
-
 
 # Функция для отправки email
 def send_email(subject, message):
@@ -35,21 +34,14 @@ def send_email(subject, message):
     except Exception as e:
         logging.error("Failed to send email: %s", str(e))
 
-
 # Callback функция для обработки Trap сообщений
-def cbFun(snmpEngine, stateReference, contextEngineId, contextName, varBinds):
-    # Извлечение информации о транспортном соединении
-    transportInfo = snmpEngine.transportDispatcher.getTransportInfo(stateReference)
-    src_ip = transportInfo[1][0]  # IP-адрес отправителя
+def cbFun(snmpEngine, stateReference, contextEngineId, contextName, varBinds, cbCtx):
+    # Извлечение информации о транспортном соединении из stateReference
+    transportDomain, transportAddress = snmpEngine.msgAndPduDsp.getTransportInfo(stateReference)
+    src_ip = transportAddress[0]  # IP-адрес отправителя
 
-    try:
-        # Преобразование IP-адреса в hostname
-        src_hostname = socket.gethostbyaddr(src_ip)[0]
-    except socket.herror:
-        src_hostname = "Unknown Host"
-
-    log_message = f'Received new Trap from {src_hostname} ({src_ip}):\n'
-
+    log_message = f'Received new Trap from {transportAddress} ({src_ip}):\n'
+    
     for name, val in varBinds:
         oid = name.prettyPrint()  # OID в текстовом виде
         value = val.prettyPrint()  # Значение в текстовом виде
@@ -65,7 +57,6 @@ def cbFun(snmpEngine, stateReference, contextEngineId, contextName, varBinds):
             send_email("SNMP Trap Alert", log_message)
             break
 
-
 # Основная функция
 async def main():
     try:
@@ -75,7 +66,7 @@ async def main():
         config.addTransport(
             snmpEngine,
             udp.domainName,
-            udp.UdpTransport().openServerMode(('0.0.0.0', 10162))
+            udp.UdpTransport().openServerMode(('0.0.0.0', 162))
         )
 
         # Настройка SNMPv2c
