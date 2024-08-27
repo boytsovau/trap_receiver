@@ -1,7 +1,7 @@
 import os
 import glob
 from pysnmp.smi import builder, view, compiler, rfc1902
-from pysnmp.hlapi.asyncio import SnmpEngine, CommunityData, ContextData
+from pysnmp.hlapi.asyncio import SnmpEngine, ObjectType
 from pysnmp.entity import config
 from pysnmp.carrier.asyncio.dgram import udp
 from pysnmp.entity.rfc3413 import ntfrcv
@@ -28,8 +28,8 @@ mib_sources_dir = 'mibs/huawei/'
 compiler.addMibCompiler(mibBuilder, sources=[f'file://{mib_sources_dir}'])
 
 # Загружаем все MIB файлы из директории
-for mib_file in glob.glob(os.path.join(mib_sources_dir, '*.mib')):
-    mib_name = os.path.splitext(os.path.basename(mib_file))[0]
+for mib_file in os.listdir(mib_sources_dir):
+    mib_name = os.path.splitext(mib_file)[0]
     try:
         mibBuilder.loadModules(mib_name)
         logging.info(f'MIB {mib_name} successfully loaded.')
@@ -61,16 +61,16 @@ def cbFun(snmpEngine, stateReference, contextEngineId, contextName, varBinds, cb
     log_message = 'Received new Trap message:\n'
     for name, val in varBinds:
         try:
-            oid = name.prettyPrint()
-            val_str = val.prettyPrint()
+            # Используем ObjectType для интерпретации OID и значения
+            var_bind = ObjectType(name, val).resolveWithMib(mibViewController)
+            oid_str = var_bind[0].prettyPrint()
+            value_str = var_bind[1].prettyPrint()
 
-            # Попытка найти символ в MIB
-            mibNode, = mibViewController.mibBuilder.importSymbols(name.getMibSymbol()[0])
-            resolvedName = mibNode.getLabel()
-
-            log_message += f'{resolvedName} ({oid}) = {val_str}\n'
+            log_message += f'{oid_str} = {value_str}\n'
         except Exception as e:
-            log_message += f'{oid} = {val_str}\n'
+            oid = name.prettyPrint()
+            value = val.prettyPrint()
+            log_message += f'{oid} = {value}\n'
             logging.error(f"Error resolving OID {oid}: {e}")
 
     logging.info(log_message)
