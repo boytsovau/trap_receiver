@@ -4,7 +4,6 @@ from pysnmp.hlapi.asyncio import SnmpEngine, CommunityData, ContextData
 from pysnmp.entity import config
 from pysnmp.carrier.asyncio.dgram import udp
 from pysnmp.entity.rfc3413 import ntfrcv
-from pysnmp.hlapi import ObjectType
 import smtplib
 from email.mime.text import MIMEText
 
