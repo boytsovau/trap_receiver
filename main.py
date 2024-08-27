@@ -2,7 +2,7 @@ import socket
 import logging
 import asyncio
 import smtplib
-from pysnmp.hlapi.asyncio import SnmpEngine
+from pysnmp.hlapi.asyncio import SnmpEngine, CommunityData, ContextData
 from pysnmp.entity import config
 from pysnmp.carrier.asyncio.dgram import udp
 from pysnmp.entity.rfc3413 import ntfrcv
@@ -37,7 +37,7 @@ def send_email(subject, message):
 
 
 # Callback функция для обработки Trap сообщений
-def cbFun(snmpEngine, stateReference, varBinds):
+def cbFun(snmpEngine, stateReference, contextEngineId, contextName, varBinds):
     # Извлечение информации о транспортном соединении
     transportInfo = snmpEngine.transportDispatcher.getTransportInfo(stateReference)
     src_ip = transportInfo[1][0]  # IP-адрес отправителя
@@ -75,7 +75,7 @@ async def main():
         config.addTransport(
             snmpEngine,
             udp.domainName,
-            udp.UdpTransport().openServerMode(('0.0.0.0', 162))
+            udp.UdpTransport().openServerMode(('0.0.0.0', 10162))
         )
 
         # Настройка SNMPv2c
