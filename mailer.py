@@ -8,7 +8,6 @@ logger = setup_logger('system_log', 'systemlog.log')
 
 def send_email(subject, message, recipients):
     sender = "your_email@example.com"
-    receiver = "recipient@example.com"
     msg = MIMEText(message)
     msg['Subject'] = subject
     msg['From'] = sender
@@ -16,9 +15,8 @@ def send_email(subject, message, recipients):
 
     try:
         with smtplib.SMTP('smtp.example.com', 25) as server:
-            server.starttls()
-            server.login("your_email@example.com", "your_password")
-            server.sendmail(sender, receiver, msg.as_string())
-            logger.info("Email sent to %s", receiver)
+            server.set_debuglevel(1)
+            server.sendmail(sender, recipients, msg.as_string())
+            logger.info("Email sent to %s", ", ".join(recipients))
     except Exception as e:
         logger.error("Failed to send email: %s", str(e))
