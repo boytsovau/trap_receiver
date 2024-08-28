@@ -14,7 +14,7 @@ logger = setup_logger('trap_log', 'traplog.log')
 with open('/configs/notification_rules.json', 'r') as rules:
     notification_rules = json.load(rules)
 
-with open('/configs/recepient.json', 'r') as r:
+with open('/configs/recepients.json', 'r') as r:
     recipients = json.load(r)
 
 
