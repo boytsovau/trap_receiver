@@ -63,7 +63,8 @@ async def main():
         raise
 
 
-# Запуск asyncio loop
-loop = asyncio.get_event_loop()
-loop.run_until_complete(main())
-loop.run_forever()
+if __name__ == "__main__":
+    # Запуск asyncio loop
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main())
+    loop.run_forever()
