@@ -1,6 +1,6 @@
 [![Python 3.6.8](https://img.shields.io/badge/python-3.6.8-green.svg)](https://www.python.org/downloads/release/python-368/)
 [![Python 3.11.9](https://img.shields.io/badge/python-3.11.9-green.svg)](https://www.python.org/downloads/release/python-3119/)
-
+[![Maintainability](https://api.codeclimate.com/v1/badges/2d24a43fd107c7c9f694/maintainability)](https://codeclimate.com/github/boytsovau/trap_receiver/maintainability)
 
 # SNMP Trap Receiver с уведомлениями по электронной почте
 
