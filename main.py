@@ -41,14 +41,17 @@ def cbFun(snmpEngine, stateReference, contextEngineId, contextName, varBinds, cb
         oid = name.prettyPrint()
 
         for rule in notification_rules["notifications"]:
+            sensitivity = rule['sensitivity']
+            mail_to = recipients.get(sensitivity)
             if oid == rule["oid"]:
                 # Формируем сообщение с информацией обо всех OID в Trap
                 message = f"Trap received for {rule['description']}:\n\n"
 
+
                 for name, val in varBinds:
                     message += f"OID: {name.prettyPrint()} = {val.prettyPrint()}\n"
 
-                send_email(rule["email_subject"], message, rule["email_recipients"])
+                send_email(rule["email_subject"], message, mail_to)
                 email_sent = True
                 break
 

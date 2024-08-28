@@ -1,13 +1,4 @@
 {
-    "recipients": [
-        {
-            "sensitivity": "critical",
-            "mail_to": ["admin@example.com", "support@example.com"]
-        },
-        {
-            "sensitivity": "info",
-            "mail_to": ["admin@example.com", "support@example.com"]
-        }
-
-    ]
+    "critical": ["admin@example.com", "support@example.com"],
+    "info": ["admin@example.com", "support@example.com"]
 }
