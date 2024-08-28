@@ -17,11 +17,19 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 notification_rules_path = os.path.join(current_dir, 'configs', 'notification_rules.json')
 recipients_path = os.path.join(current_dir, 'configs', 'recipients.json')
 
-with open(notification_rules_path, 'r') as rules:
-    notification_rules = json.load(rules)
+try:
+    with open(notification_rules_path, 'r') as rules:
+        notification_rules = json.load(rules)
+except FileNotFoundError:
+    print(f"File {notification_rules_path} not found.")
+    notification_rules = {}
 
-with open(recipients_path, 'r') as r:
-    recipients = json.load(r)
+try:
+    with open(recipients_path, 'r') as r:
+        recipients = json.load(r)
+except FileNotFoundError:
+    print(f"File {recipients_path} not found.")
+    recipients = {}
 
 
 # Callback функция для обработки Trap сообщений
