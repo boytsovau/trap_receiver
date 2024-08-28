@@ -1,5 +1,6 @@
 import asyncio
 import json
+import os
 from log_config import setup_logger
 from mailer import send_email
 from pysnmp.hlapi.asyncio import SnmpEngine, CommunityData, ContextData
@@ -10,11 +11,16 @@ from pysnmp.entity.rfc3413 import ntfrcv
 
 logger = setup_logger('trap_log', 'traplog.log')
 
+current_dir = os.path.dirname(os.path.abspath(__file__))
 
-with open('/configs/notification_rules.json', 'r') as rules:
+# Определяем полный путь к файлам
+notification_rules_path = os.path.join(current_dir, 'configs', 'notification_rules.json')
+recipients_path = os.path.join(current_dir, 'configs', 'recipients.json')
+
+with open(notification_rules_path, 'r') as rules:
     notification_rules = json.load(rules)
 
-with open('/configs/recepients.json', 'r') as r:
+with open(recipients_path, 'r') as r:
     recipients = json.load(r)
 
 
