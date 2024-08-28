@@ -6,13 +6,13 @@ from log_config import setup_logger
 logger = setup_logger('system_log', 'systemlog.log')
 
 
-def send_email(subject, message):
+def send_email(subject, message, recipients):
     sender = "your_email@example.com"
     receiver = "recipient@example.com"
     msg = MIMEText(message)
     msg['Subject'] = subject
     msg['From'] = sender
-    msg['To'] = receiver
+    msg['To'] = ", ".join(recipients)
 
     try:
         with smtplib.SMTP('smtp.example.com', 25) as server:

@@ -1,0 +1,10 @@
+{
+    "notifications": [
+        {
+            "oid": "1.3.6.1.4.1.2011.5.25.123.1.28.8.0",
+            "description": "SLB",
+            "email_subject": "SLB group change",
+            "sensitivity": "critical"
+        }
+    ]
+}

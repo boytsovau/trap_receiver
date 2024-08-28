@@ -1,4 +1,5 @@
 import asyncio
+import json
 from log_config import setup_logger
 from mailer import send_email
 from pysnmp.hlapi.asyncio import SnmpEngine, CommunityData, ContextData
@@ -8,6 +9,13 @@ from pysnmp.entity.rfc3413 import ntfrcv
 
 
 logger = setup_logger('trap_log', 'traplog.log')
+
+
+with open('/configs/notification_rules.json', 'r') as rules:
+    notification_rules = json.load(rules)
+
+with open('/configs/recepient.json', 'r') as r:
+    recipients = json.load(r)
 
 
 # Callback функция для обработки Trap сообщений
@@ -27,11 +35,25 @@ def cbFun(snmpEngine, stateReference, contextEngineId, contextName, varBinds, cb
     # print(log_message)
 
     # Проверка на конкретное значение Trap и отправка email
+    email_sent = False
+
     for name, val in varBinds:
-        if 'linkDown' in val.prettyPrint():
-            logger.debug("Detected 'linkDown', sending email...")
-            send_email("SNMP Trap Alert", log_message)
-            break
+        oid = name.prettyPrint()
+
+        for rule in notification_rules["notifications"]:
+            if oid == rule["oid"]:
+                # Формируем сообщение с информацией обо всех OID в Trap
+                message = f"Trap received for {rule['description']}:\n\n"
+
+                for name, val in varBinds:
+                    message += f"OID: {name.prettyPrint()} = {val.prettyPrint()}\n"
+
+                send_email(rule["email_subject"], message, rule["email_recipients"])
+                email_sent = True
+                break
+
+    if not email_sent:
+        logger.info("No matching OID found in the notification rules.")
 
 
 # Основная функция
