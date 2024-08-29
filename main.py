@@ -16,6 +16,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 # Определяем полный путь к файлам
 notification_rules_path = os.path.join(current_dir, 'configs', 'notification_rules.json')
 recipients_path = os.path.join(current_dir, 'configs', 'recipients.json')
+device_path = os.path.join(current_dir, 'configs', 'device.json')
 
 try:
     with open(notification_rules_path, 'r') as rules:
@@ -31,14 +32,21 @@ except FileNotFoundError:
     print(f"File {recipients_path} not found.")
     recipients = {}
 
+try:
+    with open(device_path, 'r') as d:
+        device = json.load(d)
+except FileNotFoundError:
+    print(f"File {device_path} not found.")
+    device = {}
+
 
 # Callback функция для обработки Trap сообщений
 def cbFun(snmpEngine, stateReference, contextEngineId, contextName, varBinds, cbCtx):
     # Извлечение информации о транспортном соединении из stateReference
     transportDomain, transportAddress = snmpEngine.msgAndPduDsp.getTransportInfo(stateReference)
     src_ip = transportAddress[0]  # IP-адрес отправителя
-
-    log_message = f'Received new Trap from {src_ip}:\n'
+    hostname = device.get(src_ip)
+    log_message = f'Received new Trap from {hostname} {src_ip}:\n'
 
     for name, val in varBinds:
         oid = name.prettyPrint()  # OID в текстовом виде
@@ -59,7 +67,7 @@ def cbFun(snmpEngine, stateReference, contextEngineId, contextName, varBinds, cb
             mail_to = recipients.get(sensitivity)
             if oid == rule["oid"]:
                 # Формируем сообщение с информацией обо всех OID в Trap
-                message = f"Trap received for {rule['description']} from {src_ip}:\n\n"
+                message = f"Trap received for {rule['description']} from {hostname}: {src_ip}:\n\n"
 
 
                 for name, val in varBinds:
