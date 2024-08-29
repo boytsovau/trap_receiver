@@ -38,7 +38,7 @@ def cbFun(snmpEngine, stateReference, contextEngineId, contextName, varBinds, cb
     transportDomain, transportAddress = snmpEngine.msgAndPduDsp.getTransportInfo(stateReference)
     src_ip = transportAddress[0]  # IP-адрес отправителя
 
-    log_message = f'Received new Trap from {transportDomain} {transportAddress} ({src_ip}):\n'
+    log_message = f'Received new Trap from {src_ip}:\n'
 
     for name, val in varBinds:
         oid = name.prettyPrint()  # OID в текстовом виде
@@ -59,7 +59,7 @@ def cbFun(snmpEngine, stateReference, contextEngineId, contextName, varBinds, cb
             mail_to = recipients.get(sensitivity)
             if oid == rule["oid"]:
                 # Формируем сообщение с информацией обо всех OID в Trap
-                message = f"Trap received for {rule['description']}:\n\n"
+                message = f"Trap received for {rule['description']} from {src_ip}:\n\n"
 
 
                 for name, val in varBinds:
