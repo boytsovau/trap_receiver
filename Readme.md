@@ -104,7 +104,7 @@ After=multi-user.arget
 User=root
 Group=root
 Type=simple
-ExecStart=/home/ВАШ_USERNAME/trap_receiver/venv/bin/python /home/ВАШ_USERNAME/trap_receiver/main2.py
+ExecStart=/home/ВАШ_USERNAME/trap_receiver/venv/bin/python /home/ВАШ_USERNAME/trap_receiver/main.py
 WorkingDirectory=/home/ВАШ_USERNAME/trap_receiver/
 Restart=always
 
@@ -113,7 +113,7 @@ WantedBy=multi-user.target
 
 ```
 
-3. Скопиируйте и запустите сервис
+3. Скопируйте и запустите сервис
 
 ```bash
 cp traplog.service /etc/systemd/system
