@@ -26,7 +26,15 @@
 
 1. Клонируйте репозиторий или скачайте исходный код.
 2. Убедитесь, что у вас установлен Python 3.x.
-3. Установите необходимые зависимости (если требуются дополнительные модули).
+3. Разверните виртуальное окружение 
+```bash
+    python3 -m venv venv
+```
+4. Активируйте вирутальное окружение
+```bash
+    source venv/bin/activate
+```
+5. Установите необходимые зависимости (если требуются дополнительные модули).
 
 ## Конфигурация
 
@@ -80,4 +88,35 @@
 
 ```
 
+### Запуск скрипта как сервис.
 
+1. Создайте файл traplog.service
+```bash
+touch traplog.service
+```
+2. Пропишите следующие настройки в данный файл:
+```bash
+[Unit]
+Description=traplog
+After=multi-user.arget
+
+[Service]
+User=root
+Group=root
+Type=simple
+ExecStart=/home/ВАШ_USERNAME/trap_receiver/venv/bin/python /home/ВАШ_USERNAME/trap_receiver/main2.py
+WorkingDirectory=/home/ВАШ_USERNAME/trap_receiver/
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
+```
+
+3. Скопиируйте и запустите сервис
+
+```bash
+cp traplog.service /etc/systemd/system
+sudo systemctl enable whois.service
+sudo systemctl restart whois.service
+```
