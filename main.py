@@ -65,7 +65,7 @@ def cbFun(snmpEngine, stateReference, contextEngineId, contextName, varBinds, cb
         for rule in notification_rules["notifications"]:
             sensitivity = rule['sensitivity']
             mail_to = recipients.get(sensitivity)
-            if oid == rule["oid"]:
+            if oid in rule["oid"]:
                 # Формируем сообщение с информацией обо всех OID в Trap
                 message = f"Trap received for {rule['description']} from {hostname}: {src_ip}:\n\n"
 
@@ -89,7 +89,7 @@ async def main():
         # Настройка транспорта для получения SNMP TRAP сообщений
         config.addTransport(
             snmpEngine,
-            udp.domainName,
+            udp.DOMAIN_NAME,
             udp.UdpTransport().openServerMode(('0.0.0.0', 10162))
         )
 
