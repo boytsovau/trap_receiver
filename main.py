@@ -3,7 +3,7 @@ import json
 import os
 from log_config import setup_logger
 from mailer import send_email
-from pysnmp.hlapi.asyncio import SnmpEngine, CommunityData, ContextData
+from pysnmp.hlapi.asyncio import SnmpEngine, CommunityData, ContextData # noqa: F401
 from pysnmp.entity import config
 from pysnmp.carrier.asyncio.dgram import udp
 from pysnmp.entity.rfc3413 import ntfrcv
@@ -65,10 +65,11 @@ def cbFun(snmpEngine, stateReference, contextEngineId, contextName, varBinds, cb
         for rule in notification_rules["notifications"]:
             sensitivity = rule['sensitivity']
             mail_to = recipients.get(sensitivity)
-            if oid in rule["oid"]:
+
+            if rule["oid"] in oid:
+
                 # Формируем сообщение с информацией обо всех OID в Trap
                 message = f"Trap received for {rule['description']} from {hostname}: {src_ip}:\n\n"
-
 
                 for name, val in varBinds:
                     message += f"OID: {name.prettyPrint()} = {val.prettyPrint()}\n"
