@@ -2,11 +2,13 @@ import asyncio
 import json
 import os
 from log_config import setup_logger
+from mib_loader import load_mib_modules
 from mailer import send_email
 from pysnmp.hlapi.asyncio import SnmpEngine, CommunityData, ContextData # noqa: F401
 from pysnmp.entity import config
 from pysnmp.carrier.asyncio.dgram import udp
 from pysnmp.entity.rfc3413 import ntfrcv
+from pysnmp.smi import rfc1902
 
 
 logger = setup_logger('trap_log', 'traplog.log')
@@ -17,6 +19,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 notification_rules_path = os.path.join(current_dir, 'configs', 'notification_rules.json')
 recipients_path = os.path.join(current_dir, 'configs', 'recipients.json')
 device_path = os.path.join(current_dir, 'configs', 'device.json')
+mib_path = os.path.join(current_dir, 'mibs')
 
 try:
     with open(notification_rules_path, 'r') as rules:
@@ -38,6 +41,9 @@ try:
 except FileNotFoundError:
     print(f"File {device_path} not found.")
     device = {}
+
+mib = load_mib_modules(mib_path, ['HUAWEI', 'CISCO'])
+
 
 
 # Callback функция для обработки Trap сообщений
@@ -61,7 +67,7 @@ def cbFun(snmpEngine, stateReference, contextEngineId, contextName, varBinds, cb
 
     for name, val in varBinds:
         oid = name.prettyPrint()
-
+        resolved_oid = rfc1902.ObjectIdentity(name).resolveWithMib(mib)
         for rule in notification_rules["notifications"]:
             sensitivity = rule['sensitivity']
             mail_to = recipients.get(sensitivity)
@@ -72,7 +78,11 @@ def cbFun(snmpEngine, stateReference, contextEngineId, contextName, varBinds, cb
                 message = f"Trap received for {rule['description']} from {hostname}: {src_ip}:\n\n"
 
                 for name, val in varBinds:
-                    message += f"OID: {name.prettyPrint()} = {val.prettyPrint()}\n"
+                    try:
+                        resolved_oid = rfc1902.ObjectIdentity(name).resolveWithMib(mib)
+                        message += f"OID: {resolved_oid.prettyPrint()} = {val.prettyPrint()}\n"
+                    except Exception as e:
+                        log_message += f'{name} = {val.prettyPrint()} (Could not resolve OID: {e})\n'
 
                 send_email(rule["email_subject"], message, mail_to)
                 email_sent = True
