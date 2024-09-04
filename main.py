@@ -79,6 +79,10 @@ def cbFun(snmpEngine, stateReference, contextEngineId, contextName, varBinds, cb
 
                 for name, val in varBinds:
                     try:
+                        if name == "1.3.6.1.6.3.1.1.4.1.0 ":
+                            resolved_oid = rfc1902.ObjectIdentity(name).resolveWithMib(mib)
+                            resolved_val = rfc1902.ObjectIdentity(val).resolveWithMib(mib)
+                            message += f"OID: {resolved_oid.prettyPrint()} = {resolved_val.prettyPrint()}\n"
                         resolved_oid = rfc1902.ObjectIdentity(name).resolveWithMib(mib)
                         message += f"OID: {resolved_oid.prettyPrint()} = {val.prettyPrint()}\n"
                     except Exception as e:
