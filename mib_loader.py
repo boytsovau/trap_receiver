@@ -1,4 +1,5 @@
 import os
+import traceback
 from pysnmp.smi import builder, view
 from log_config import setup_logger
 
@@ -25,7 +26,21 @@ def load_mib_modules(mib_dir, mib_modules: list):
             loaded_modules.append(module)
         except Exception as e:
             logger.error(f"Ошибка при загрузке модуля {module}: {str(e)}")
+            traceback.print_exc()
 
     mibViewController = view.MibViewController(mibBuilder)
 
     return mibViewController
+
+
+
+if __name__ == '__main__':
+    from pysnmp.smi import rfc1902
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    mib_path = os.path.join(current_dir, 'mibs')
+    mib = load_mib_modules(mib_path, ['HUAWEI', 'CISCO', 'SNMPv2', 'BGP4-MIB'])
+    name = "1.3.6.1.4.1.2011.6.122.26.6.1"
+    resolved_oid = rfc1902.ObjectIdentity(name).resolveWithMib(mib)
+    print(resolved_oid.prettyPrint())
+
+    print(resolved_oid.getMibSymbol())
