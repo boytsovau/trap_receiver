@@ -8,7 +8,12 @@ from config import (
     RECEPIENTS
 )
 from mailer import send_email
-from pysnmp.hlapi.asyncio import SnmpEngine, CommunityData, ContextData # noqa: F401
+from pysnmp.hlapi.asyncio import (
+    SnmpEngine,
+    CommunityData,
+    ContextData
+    # noqa: F401
+    )
 from pysnmp.entity import config
 from pysnmp.carrier.asyncio.dgram import udp
 from pysnmp.entity.rfc3413 import ntfrcv
@@ -21,7 +26,6 @@ logger = setup_logger('trap_log', 'traplog.log')
 mib = load_mib_modules(MIB, ['py'])
 
 
-
 # Callback функция для обработки Trap сообщений
 def cbFun(snmpEngine, stateReference, contextEngineId, contextName, varBinds, cbCtx):
     # Извлечение информации о транспортном соединении из stateReference
@@ -31,15 +35,15 @@ def cbFun(snmpEngine, stateReference, contextEngineId, contextName, varBinds, cb
     log_message = f'Received new Trap from {hostname} {src_ip}:\n'
 
     for name, val in varBinds:
-            oid = name.prettyPrint()  # OID в текстовом виде
-            value = val.prettyPrint()  # Значение в текстовом виде
+        oid = name.prettyPrint()  # OID в текстовом виде
+        value = val.prettyPrint()  # Значение в текстовом виде
+        resolved_oid = rfc1902.ObjectIdentity(name).resolveWithMib(mib)
+        if oid == "1.3.6.1.6.3.1.1.4.1.0":
             resolved_oid = rfc1902.ObjectIdentity(name).resolveWithMib(mib)
-            if oid == "1.3.6.1.6.3.1.1.4.1.0":
-                resolved_oid = rfc1902.ObjectIdentity(name).resolveWithMib(mib)
-                resolved_val = rfc1902.ObjectIdentity(val).resolveWithMib(mib)
-                log_message += f'{resolved_oid.prettyPrint()} = {resolved_val.prettyPrint()}\n'
-            else:
-                log_message += f'{resolved_oid.prettyPrint()} = {value}\n'
+            resolved_val = rfc1902.ObjectIdentity(val).resolveWithMib(mib)
+            log_message += f'{resolved_oid.prettyPrint()} = {resolved_val.prettyPrint()}\n'
+        else:
+            log_message += f'{resolved_oid.prettyPrint()} = {value}\n'
 
     logger.info(log_message)
 
