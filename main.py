@@ -1,8 +1,12 @@
 import asyncio
-import json
-import os
 from log_config import setup_logger
 from mib_loader import load_mib_modules
+from config import (
+    RULES,
+    DEVICE,
+    MIB,
+    RECEPIENTS
+)
 from mailer import send_email
 from pysnmp.hlapi.asyncio import SnmpEngine, CommunityData, ContextData # noqa: F401
 from pysnmp.entity import config
@@ -13,36 +17,8 @@ from pysnmp.smi import rfc1902
 
 logger = setup_logger('trap_log', 'traplog.log')
 
-current_dir = os.path.dirname(os.path.abspath(__file__))
 
-# Определяем полный путь к файлам
-notification_rules_path = os.path.join(current_dir, 'configs', 'notification_rules.json')
-recipients_path = os.path.join(current_dir, 'configs', 'recipients.json')
-device_path = os.path.join(current_dir, 'configs', 'device.json')
-mib_path = os.path.join(current_dir, 'mibs')
-
-try:
-    with open(notification_rules_path, 'r') as rules:
-        notification_rules = json.load(rules)
-except FileNotFoundError:
-    print(f"File {notification_rules_path} not found.")
-    notification_rules = {}
-
-try:
-    with open(recipients_path, 'r') as r:
-        recipients = json.load(r)
-except FileNotFoundError:
-    print(f"File {recipients_path} not found.")
-    recipients = {}
-
-try:
-    with open(device_path, 'r') as d:
-        device = json.load(d)
-except FileNotFoundError:
-    print(f"File {device_path} not found.")
-    device = {}
-
-mib = load_mib_modules(mib_path, ['HUAWEI', 'CISCO'])
+mib = load_mib_modules(MIB, ['py'])
 
 
 
@@ -51,16 +27,21 @@ def cbFun(snmpEngine, stateReference, contextEngineId, contextName, varBinds, cb
     # Извлечение информации о транспортном соединении из stateReference
     transportDomain, transportAddress = snmpEngine.msgAndPduDsp.getTransportInfo(stateReference)
     src_ip = transportAddress[0]  # IP-адрес отправителя
-    hostname = device.get(src_ip)
+    hostname = DEVICE.get(src_ip)
     log_message = f'Received new Trap from {hostname} {src_ip}:\n'
 
     for name, val in varBinds:
-        oid = name.prettyPrint()  # OID в текстовом виде
-        value = val.prettyPrint()  # Значение в текстовом виде
-        log_message += f'{oid} = {value}\n'
+            oid = name.prettyPrint()  # OID в текстовом виде
+            value = val.prettyPrint()  # Значение в текстовом виде
+            resolved_oid = rfc1902.ObjectIdentity(name).resolveWithMib(mib)
+            if oid == "1.3.6.1.6.3.1.1.4.1.0":
+                resolved_oid = rfc1902.ObjectIdentity(name).resolveWithMib(mib)
+                resolved_val = rfc1902.ObjectIdentity(val).resolveWithMib(mib)
+                log_message += f'{resolved_oid.prettyPrint()} = {resolved_val.prettyPrint()}\n'
+            else:
+                log_message += f'{resolved_oid.prettyPrint()} = {value}\n'
 
     logger.info(log_message)
-    # print(log_message)
 
     # Проверка на конкретное значение Trap и отправка email
     email_sent = False
@@ -68,9 +49,9 @@ def cbFun(snmpEngine, stateReference, contextEngineId, contextName, varBinds, cb
     for name, val in varBinds:
         oid = name.prettyPrint()
         resolved_oid = rfc1902.ObjectIdentity(name).resolveWithMib(mib)
-        for rule in notification_rules["notifications"]:
+        for rule in RULES["notifications"]:
             sensitivity = rule['sensitivity']
-            mail_to = recipients.get(sensitivity)
+            mail_to = RECEPIENTS.get(sensitivity)
 
             if rule["oid"] in oid:
 
@@ -115,7 +96,6 @@ async def main():
         ntfrcv.NotificationReceiver(snmpEngine, cbFun)
 
         logger.info("SNMP Trap Receiver is running")
-        # print("SNMP Trap Receiver is running and logging to 'snmp_traps.log'...")
 
         # Запуск обработчика asyncio
         snmpEngine.transportDispatcher.jobStarted(1)
