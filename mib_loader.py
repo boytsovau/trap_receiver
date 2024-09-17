@@ -2,6 +2,7 @@ import os
 from pysnmp.smi import builder, view
 from log_config import setup_logger
 
+
 logger = setup_logger('mib_log', 'mib.log')
 
 
@@ -25,7 +26,6 @@ def load_mib_modules(mib_dir, mib_modules: list):
             loaded_modules.append(module)
         except Exception as e:
             logger.error(f"Ошибка при загрузке модуля {module}: {str(e)}")
-            #traceback.print_exc()
 
     mibViewController = view.MibViewController(mibBuilder)
 
