@@ -52,11 +52,12 @@ def cbFun(snmpEngine, stateReference, contextEngineId, contextName, varBinds, cb
                 for name, val in varBinds:
                     value = Resolve(val).get_resolve()
                     oid = Resolve(name).get_resolve()
+                    if MIBEntry(oid).get_name() == "ipCidrRouteNextHop"
+                        message += f'route change {IpParser(MIBEntry(oid).get_numbers).get_route()}: Value {MIBEntry(value).get_name()}\n'
                     message += f'{MIBEntry(oid).get_name()} = {MIBEntry(value).get_name()}\n'
 
-                send_email(rule["email_subject"], message, mail_to)
-                email_sent = True
-                break
+    send_email(rule["email_subject"], message, mail_to)
+    email_sent = True
 
     if not email_sent:
         logger.info("No matching OID found in the notification rules.")

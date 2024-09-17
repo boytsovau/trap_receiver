@@ -1,6 +1,7 @@
 from pysnmp.smi import rfc1902
 from config import mib
 from log_config import setup_logger
+import time
 
 
 logger = setup_logger('system_log', 'systemlog.log')
@@ -73,9 +74,19 @@ class Resolve:
         return self.resolve
 
 
+def GetUptime(uptime):
+
+    uptime_seconds = uptime / 100
+
+    uptime_struct = time.gmtime(uptime_seconds)
+
+    uptime_days = uptime_seconds // (24 * 3600)
+    formatted_time = time.strftime(f"{int(uptime_days)} days, %H hours, %M minutes, %S seconds", uptime_struct)
+    return formatted_time
+
+
 if __name__ == "__main__":
-    x = "1.3.6.1.2.1.4.24.4.1.4"
+    x = "1.3.6.1.4.1.2011.5.25.41.1.20"
     result = Resolve(x).get_resolve()
     print(result)
-    if MIBEntry(result).get_name() == "ipCidrRouteNextHop":
-        print(MIBEntry(result).get_name())
+    print(MIBEntry(result).get_name())
