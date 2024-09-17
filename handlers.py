@@ -90,5 +90,5 @@ if __name__ == "__main__":
     result = Resolve(x).get_resolve()
     print(result)
     print(MIBEntry(result).get_name())
-    z = GetUptime(323231231)
+    z = GetUptime("323231231")
     print(z)
