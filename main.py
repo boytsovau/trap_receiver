@@ -1,6 +1,6 @@
 import asyncio
 from log_config import setup_logger
-from handlers import IpParser, MIBEntry, Resolve
+from handlers import IpParser, MIBEntry, Resolve, GetUptime
 from config import (
     RULES,
     DEVICE,
@@ -54,6 +54,8 @@ def cbFun(snmpEngine, stateReference, contextEngineId, contextName, varBinds, cb
                     oid = Resolve(name).get_resolve()
                     if MIBEntry(oid).get_name() == "ipCidrRouteNextHop"
                         message += f'route change {IpParser(MIBEntry(oid).get_numbers).get_route()}: Value {MIBEntry(value).get_name()}\n'
+                    if MIBEntry(oid).get_name() == "sysUpTime":
+                        message += f'{MIBEntry(oid).get_name()} = {GetUptime(MIBEntry(value).get_name())}\n'
                     message += f'{MIBEntry(oid).get_name()} = {MIBEntry(value).get_name()}\n'
 
     send_email(rule["email_subject"], message, mail_to)
