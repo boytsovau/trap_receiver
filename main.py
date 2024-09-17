@@ -52,7 +52,7 @@ def cbFun(snmpEngine, stateReference, contextEngineId, contextName, varBinds, cb
                 for name, val in varBinds:
                     value = Resolve(val).get_resolve()
                     oid = Resolve(name).get_resolve()
-                    if MIBEntry(oid).get_name() == "ipCidrRouteNextHop"
+                    if MIBEntry(oid).get_name() == "ipCidrRouteNextHop":
                         message += f'route change {IpParser(MIBEntry(oid).get_numbers).get_route()}: Value {MIBEntry(value).get_name()}\n'
                     if MIBEntry(oid).get_name() == "sysUpTime":
                         message += f'{MIBEntry(oid).get_name()} = {GetUptime(MIBEntry(value).get_name())}\n'
