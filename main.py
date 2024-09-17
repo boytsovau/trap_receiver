@@ -16,7 +16,6 @@ from pysnmp.hlapi.asyncio import (
 from pysnmp.entity import config
 from pysnmp.carrier.asyncio.dgram import udp
 from pysnmp.entity.rfc3413 import ntfrcv
-from pysnmp.smi import rfc1902
 
 
 logger = setup_logger('trap_log', 'traplog.log')

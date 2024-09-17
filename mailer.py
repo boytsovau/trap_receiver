@@ -20,3 +20,8 @@ def send_email(subject, message, recipients):
             logger.info("Email sent to %s", ", ".join(recipients))
     except Exception as e:
         logger.error("Failed to send email: %s", str(e))
+
+
+class MailSender:
+    def __init__(self) -> None:
+        pass
