@@ -39,6 +39,8 @@ def cbFun(snmpEngine, stateReference, contextEngineId, contextName, varBinds, cb
     email_sent = False
 
     for name, val in varBinds:
+        if email_sent:
+            break
         oid = Resolve(name).get_resolve()
         for rule in RULES["notifications"]:
             sensitivity = rule['sensitivity']
@@ -58,8 +60,9 @@ def cbFun(snmpEngine, stateReference, contextEngineId, contextName, varBinds, cb
                         message += f'{MIBEntry(oid).get_name()} = {GetUptime(int(MIBEntry(value).get_name()))}\n'
                     message += f'{MIBEntry(oid).get_name()} = {MIBEntry(value).get_name()}\n'
 
-    send_email(rule["email_subject"], message, mail_to)
-    email_sent = True
+                send_email(rule["email_subject"], message, mail_to)
+                email_sent = True
+                break
 
     if not email_sent:
         logger.info("No matching OID found in the notification rules.")
