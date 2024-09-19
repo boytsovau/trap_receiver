@@ -58,6 +58,8 @@ def cbFun(snmpEngine, stateReference, contextEngineId, contextName, varBinds, cb
                         message += f'route change {IpParser(MIBEntry(oid).get_numbers).get_route()}: Value {MIBEntry(value).get_name()}\n'
                     if MIBEntry(oid).get_name() == "sysUpTime":
                         message += f'{MIBEntry(oid).get_name()} = {GetUptime(int(MIBEntry(value).get_name()))}\n'
+                    if MIBEntry(oid).get_name() == "bgpBackwardTransition" or "bgpEstablished":
+                        message += f'{MIBEntry(oid).get_name()} peer {IpParser(MIBEntry(oid).get_numbers).get_ip()} = {MIBEntry(value).get_name()}\n'
                     message += f'{MIBEntry(oid).get_name()} = {MIBEntry(value).get_name()}\n'
 
                 send_email(rule["email_subject"], message, mail_to)
