@@ -50,6 +50,7 @@ def cbFun(snmpEngine, stateReference, contextEngineId, contextName, varBinds, cb
 
                 # Формируем сообщение с информацией обо всех OID в Trap
                 message = f"Trap received for {MIBEntry(oid).get_name()} from {hostname}: {src_ip}:\n\n"
+                subject = f"Trap {MIBEntry(oid).get_name()} received from {hostname}: {src_ip}"
 
                 for name, val in varBinds:
                     value = Resolve(val).get_resolve()
@@ -62,7 +63,7 @@ def cbFun(snmpEngine, stateReference, contextEngineId, contextName, varBinds, cb
                         message += f'{MIBEntry(oid).get_name()} peer {IpParser(MIBEntry(oid).get_numbers).get_ip()} = {MIBEntry(value).get_name()}\n'
                     message += f'{MIBEntry(oid).get_name()} = {MIBEntry(value).get_name()}\n'
 
-                send_email(rule["email_subject"], message, mail_to)
+                send_email(subject, message, mail_to)
                 email_sent = True
                 break
 
